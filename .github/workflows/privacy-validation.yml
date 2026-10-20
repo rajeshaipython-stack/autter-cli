@@ -29,6 +29,8 @@ jobs:
       - name: Migration state unit test
         run: task test CARGO_TEST_ARGS=--lib TEST_FILTER=hold_state_round_trips
       - name: Native daemon privacy regression tests
-        run: task test CARGO_TEST_ARGS='--test integration' TEST_FILTER=local_mode_privacy:: NO_CAPTURE=true TEST_THREADS=2
+        run: |
+          task test CARGO_TEST_ARGS='--test integration' TEST_FILTER=local_mode_privacy:: NO_CAPTURE=true TEST_THREADS=2
       - name: Upload hold integration tests
-        run: task test CARGO_TEST_ARGS='--test integration' TEST_FILTER=upload_hold:: NO_CAPTURE=true TEST_THREADS=2
+        run: |
+          task test CARGO_TEST_ARGS='--test integration' TEST_FILTER=upload_hold:: NO_CAPTURE=true TEST_THREADS=2
