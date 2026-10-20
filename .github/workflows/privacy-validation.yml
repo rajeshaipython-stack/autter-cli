@@ -1,0 +1,34 @@
+name: Repository privacy validation
+on:
+  push:
+    branches: [codex/validate-stream-repository-privacy]
+permissions:
+  contents: read
+jobs:
+  privacy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.93.0
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Install Task
+        run: |
+          go install github.com/go-task/task/v3/cmd/task@v3.54.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - name: Format
+        run: cargo fmt -- --check
+      - name: Lint
+        run: task lint
+      - name: Build
+        run: task build
+      - name: Transcript policy and queue unit tests
+        run: task test CARGO_TEST_ARGS=--lib TEST_FILTER=test_transcript
+      - name: Migration state unit test
+        run: task test CARGO_TEST_ARGS=--lib TEST_FILTER=hold_state_round_trips
+      - name: Native daemon privacy regression tests
+        run: task test CARGO_TEST_ARGS='--test integration' TEST_FILTER=local_mode_privacy:: NO_CAPTURE=true TEST_THREADS=2
+      - name: Upload hold integration tests
+        run: task test CARGO_TEST_ARGS='--test integration' TEST_FILTER=upload_hold:: NO_CAPTURE=true TEST_THREADS=2
